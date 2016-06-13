@@ -18,7 +18,7 @@ class GoObject(object):
     INVALID_HANDLE = 0
     registry = weakref.WeakValueDictionary()
 
-    def __new__(cls, handle):
+    def __new__(cls, handle, *args, **kwargs):
         assert cls.lib is not None
         instance = GoObject.registry.get(handle)
         if instance is not None:
@@ -40,6 +40,7 @@ class GoObject(object):
         GoObject.lib = GoObject.ffi.dlopen(library_path)
 
     def __init__(self, handle):
+        assert isinstance(handle, int)
         if handle <= self.INVALID_HANDLE:
             raise ValueError("Invalid handle")
         self._handle = handle
@@ -47,7 +48,9 @@ class GoObject(object):
         GoObject.registry[handle] = self
 
     def __del__(self):
-        self.lib.c_dispose(self._handle)
+        handle = getattr(self, "_handle", None)
+        if handle is not None:
+            self.lib.c_dispose(handle)
 
     def __repr__(self):
         general_str = super(GoObject, self).__repr__()
@@ -72,6 +75,7 @@ class GoObject(object):
             assert len(unpacked) >= 2
             assert isinstance(unpacked[-2], int)
             if unpacked[-2] >= 0:
+                cls.lib.free(unpacked[-1])
                 if compressed:
                     return unpacked
                 if len(unpacked) == 2:
@@ -104,6 +108,8 @@ class GoObject(object):
                  Go->Py: str or unicode
         """
         if isinstance(contents, cls.ffi.CData):
+            if contents == cls.ffi.NULL:
+                return None
             s = cls.ffi.string(contents).decode("utf-8")
             cls.lib.free(contents)
             return s
@@ -123,6 +129,8 @@ class GoObject(object):
     @classmethod
     def _bytes(cls, data, owner=None, size=None):
         if isinstance(data, cls.ffi.CData):
+            if data == cls.ffi.NULL:
+                return None
             s = cls.ffi.unpack(data, size)
             cls.lib.free(data)
             return s
@@ -142,6 +150,8 @@ class GoObject(object):
     @classmethod
     def _string_slice(cls, slice, owner=None):
         if isinstance(slice, cls.ffi.CData):
+            if slice == cls.ffi.NULL:
+                return []
             sarr = cls.ffi.string(slice)
             cls.lib.free(slice)
             return [s.decode("utf-8") for s in sarr.split(b"\xff")]
@@ -150,3 +160,7 @@ class GoObject(object):
     @classmethod
     def dump_go(cls):
         cls.lib.c_dump_objects()
+
+    @classmethod
+    def set_go_trace(cls, value):
+        cls.lib.c_set_trace(bool(value))

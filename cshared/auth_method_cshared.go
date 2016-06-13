@@ -23,7 +23,7 @@ func c_ParseRawPrivateKey(pemBytes []byte) (uint64, int, *C.char) {
 	if err != nil {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
-	return uint64(RegisterObject(pkey)), ErrorCodeSuccess, C.CString("")
+	return uint64(RegisterObject(pkey)), ErrorCodeSuccess, nil
 }
 
 //export c_ParsePrivateKey
@@ -32,7 +32,7 @@ func c_ParsePrivateKey(pemBytes []byte) (uint64, int, *C.char) {
 	if err != nil {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
-	return uint64(RegisterObject(signer)), ErrorCodeSuccess, C.CString("")
+	return uint64(RegisterObject(signer)), ErrorCodeSuccess, nil
 }
 
 //export c_NewPublicKey
@@ -46,7 +46,7 @@ func c_NewPublicKey(key uint64) (uint64, int, *C.char) {
 	if err != nil {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
-	return uint64(RegisterObject(pkey)), ErrorCodeSuccess, C.CString("")
+	return uint64(RegisterObject(pkey)), ErrorCodeSuccess, nil
 }
 
 //export c_NewSignerFromKey
@@ -59,7 +59,7 @@ func c_NewSignerFromKey(key uint64) (uint64, int, *C.char) {
 	if err != nil {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
-	return uint64(RegisterObject(signer)), ErrorCodeSuccess, C.CString("")
+	return uint64(RegisterObject(signer)), ErrorCodeSuccess, nil
 }
 
 //export c_MarshalAuthorizedKey
@@ -79,20 +79,20 @@ func c_ParsePublicKey(in []byte) (uint64, int, *C.char) {
 	if err != nil {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
-	return uint64(RegisterObject(pkey)), ErrorCodeSuccess, C.CString("")
+	return uint64(RegisterObject(pkey)), ErrorCodeSuccess, nil
 }
 
 //export c_ParseAuthorizedKey
 func c_ParseAuthorizedKey(in []byte) (uint64, *C.char, *C.char, *C.char, int, int, *C.char) {
 	pkey, comment, options, rest, err := ssh.ParseAuthorizedKey(in)
 	if err != nil {
-		return IH, C.CString(""), C.CString(""), nil, 0, ErrorCodeInternal,
+		return IH, nil, nil, nil, 0, ErrorCodeInternal,
 		       C.CString(err.Error())
 	}
 	pkey_handle := RegisterObject(pkey)
 	mopt := strings.Join(options, "\xff")
 	return uint64(pkey_handle), C.CString(comment), C.CString(mopt),
-	    C.CString(string(rest)), len(rest), ErrorCodeSuccess, C.CString("")
+	    C.CString(string(rest)), len(rest), ErrorCodeSuccess, nil
 }
 
 //export c_ssh_Password_New
@@ -105,7 +105,7 @@ func c_ssh_Password_New(user, pass string) uint64 {
 func c_ssh_Password_get_User(p uint64) *C.char {
 	obj, ok := GetObject(Handle(p))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
 	return C.CString(obj.(Password).User)
 }
@@ -123,7 +123,7 @@ func c_ssh_Password_set_User(p uint64, v string) {
 func c_ssh_Password_get_Pass(p uint64) *C.char {
 	obj, ok := GetObject(Handle(p))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
 	return C.CString(obj.(Password).Pass)
 }
@@ -151,7 +151,7 @@ func c_ssh_PublicKeys_New(user string, signer uint64) uint64 {
 func c_ssh_PublicKeys_get_User(p uint64) *C.char {
 	obj, ok := GetObject(Handle(p))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
 	return C.CString(obj.(PublicKeys).User)
 }

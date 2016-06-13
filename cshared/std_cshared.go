@@ -7,6 +7,32 @@ import (
 	"strings"
 )
 
+//export c_std_map_get_str_str
+func c_std_map_get_str_str(m uint64, key string) *C.char {
+	obj, ok := GetObject(Handle(m))
+	if !ok {
+		return nil
+	}
+	mapval := reflect.ValueOf(obj)
+	if mapval.Kind() == reflect.Ptr {
+		mapval = mapval.Elem()
+	}
+	if mapval.Kind() != reflect.Map {
+		return nil
+	}
+	val := mapval.MapIndex(reflect.ValueOf(key))
+	if !val.IsValid() || SafeIsNil(val) {
+		return nil
+	}
+	if (val.Kind() == reflect.Slice || val.Kind() == reflect.Array) &&
+	    val.Type().Elem().Kind() == reflect.Uint8 {
+		arr := make([]byte, val.Len(), val.Len())
+		reflect.Copy(reflect.ValueOf(arr), val)
+		return C.CString(string(arr))
+	}
+	return C.CString(val.String())
+}
+
 //export c_std_map_get_str_obj
 func c_std_map_get_str_obj(m uint64, key string) uint64 {
 	obj, ok := GetObject(Handle(m))
@@ -14,16 +40,13 @@ func c_std_map_get_str_obj(m uint64, key string) uint64 {
 		return IH
 	}
 	mapval := reflect.ValueOf(obj)
-	if mapval.Type().Kind() != reflect.Map {
+	if mapval.Kind() == reflect.Ptr {
+		mapval = mapval.Elem()
+	}
+	if mapval.Kind() != reflect.Map {
 		return IH
 	}
 	val := mapval.MapIndex(reflect.ValueOf(key))
-	if !val.IsValid() {
-		return IH
-	}
-	if val.Type().Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
 	if !val.IsValid() || SafeIsNil(val) {
 		return IH
 	}
@@ -38,7 +61,10 @@ func c_std_map_get_obj_obj(m uint64, key uint64) uint64 {
 		return IH
 	}
 	mapval := reflect.ValueOf(obj)
-	if mapval.Type().Kind() != reflect.Map {
+	if mapval.Kind() == reflect.Ptr {
+		mapval = mapval.Elem()
+	}
+	if mapval.Kind() != reflect.Map {
 		return IH
 	}
 	obj, ok = GetObject(Handle(key))
@@ -46,12 +72,6 @@ func c_std_map_get_obj_obj(m uint64, key uint64) uint64 {
 		return IH
 	}
 	val := mapval.MapIndex(reflect.ValueOf(obj))
-	if !val.IsValid() {
-		return IH
-	}
-	if val.Type().Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
 	if !val.IsValid() || SafeIsNil(val) {
 		return IH
 	}
@@ -63,11 +83,14 @@ func c_std_map_get_obj_obj(m uint64, key uint64) uint64 {
 func c_std_map_keys_str(m uint64) *C.char {
 	obj, ok := GetObject(Handle(m))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
 	mapval := reflect.ValueOf(obj)
-	if mapval.Type().Kind() != reflect.Map {
-		return C.CString("")
+	if mapval.Kind() == reflect.Ptr {
+		mapval = mapval.Elem()
+	}
+	if mapval.Kind() != reflect.Map {
+		return nil
 	}
 	keys := mapval.MapKeys()
 	keys_str := make([]string, 0, len(keys))
@@ -84,7 +107,10 @@ func c_std_map_len(m uint64) int {
 		return -1
 	}
 	mapval := reflect.ValueOf(obj)
-	if mapval.Type().Kind() != reflect.Map {
+	if mapval.Kind() == reflect.Ptr {
+		mapval = mapval.Elem()
+	}
+	if mapval.Kind() != reflect.Map {
 		return -1
 	}
 	return mapval.Len()
@@ -97,7 +123,12 @@ func c_std_map_set_str(m uint64, key string, val uint64) {
 		return
 	}
 	mapval := reflect.ValueOf(obj)
-	if mapval.Type().Kind() != reflect.Map {
+	if mapval.Kind() == reflect.Ptr {
+		mapval = mapval.Elem()
+	} else {
+		return
+	}
+	if mapval.Kind() != reflect.Map {
 		return
 	}
 	if val == IH {

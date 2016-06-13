@@ -14,7 +14,7 @@ import (
 func c_Signature_Name(s uint64) *C.char {
 	obj, ok := GetObject(Handle(s))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
 	sign := obj.(*Signature)
 	return C.CString(sign.Name)
@@ -24,7 +24,7 @@ func c_Signature_Name(s uint64) *C.char {
 func c_Signature_Email(s uint64) *C.char {
 	obj, ok := GetObject(Handle(s))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
 	sign := obj.(*Signature)
 	return C.CString(sign.Email)
@@ -34,7 +34,7 @@ func c_Signature_Email(s uint64) *C.char {
 func c_Signature_When(s uint64) *C.char {
 	obj, ok := GetObject(Handle(s))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
 	sign := obj.(*Signature)
 	return C.CString(sign.When.Format(time.RFC3339))

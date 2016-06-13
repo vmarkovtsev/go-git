@@ -3,9 +3,10 @@ from six import string_types
 
 from .go_object import GoObject
 from .common import AuthMethod
-from .std import StringMap
+from .std import TypedStringMap
 from .core import Object, ObjectStorage
 from .commit import Commit, CommitIter
+from .remote import Remote
 from .tree import Tree
 from .objects import Blob
 from .tag import Tag, TagIter
@@ -33,7 +34,8 @@ class Repository(GoObject):
 
     @property
     def Remotes(self):
-        return StringMap(self.lib.c_Repository_get_Remotes(self.handle))
+        return TypedStringMap(self.lib.c_Repository_get_Remotes(self.handle),
+                              Remote)
 
     @Remotes.setter
     def Remotes(self, value):

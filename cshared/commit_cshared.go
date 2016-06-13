@@ -47,7 +47,7 @@ func c_Commit_get_Committer(c uint64) uint64 {
 func c_Commit_get_Message(c uint64) *C.char {
 	obj, ok := GetObject(Handle(c))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
 	commit := obj.(*Commit)
 	return C.CString(commit.Message)
@@ -99,7 +99,7 @@ func c_Commit_File(c uint64, path string) (uint64, int, *C.char) {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
 	file_handle := RegisterObject(file)
-	return uint64(file_handle), ErrorCodeSuccess, C.CString("")
+	return uint64(file_handle), ErrorCodeSuccess, nil
 }
 
 //export c_Commit_ID
@@ -129,14 +129,14 @@ func c_Commit_Decode(o uint64) (uint64, int, *C.char) {
 	if err != nil {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
-	return uint64(RegisterObject(&commit)), ErrorCodeSuccess, C.CString("")
+	return uint64(RegisterObject(&commit)), ErrorCodeSuccess, nil
 }
 
 //export c_Commit_String
 func c_Commit_String(c uint64) *C.char {
 	obj, ok := GetObject(Handle(c))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
 	commit := obj.(*Commit)
 	return C.CString(commit.String())
@@ -169,10 +169,10 @@ func c_CommitIter_Next(iter uint64) (uint64, int, *C.char) {
 	commit, err := commitIter.Next()
 	if err != nil {
 		if err == io.EOF {
-			return IH, ErrorCodeSuccess, C.CString("")
+			return IH, ErrorCodeSuccess, nil
 		}
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
 	handle := RegisterObject(commit)
-	return uint64(handle), ErrorCodeSuccess, C.CString("")
+	return uint64(handle), ErrorCodeSuccess, nil
 }

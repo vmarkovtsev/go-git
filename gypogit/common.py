@@ -95,3 +95,15 @@ class SSHPublicKeysMethod(AuthMethod):
     def Signer(self, value):
         assert isinstance(value, Signer)
         self.lib.c_ssh_PublicKeys_set_Signer(self.handle, value.handle)
+
+
+class GitUploadPackInfo(GoObject):
+    pass
+
+
+class GitUploadPackRequest(GoObject):
+    pass
+
+
+class Capabilities(GoObject):
+    pass

@@ -33,7 +33,7 @@ func c_NewRepository(url string, auth uint64) (uint64, int, *C.char) {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
 	repo_handle := RegisterObject(repo)
-	return uint64(repo_handle), ErrorCodeSuccess, C.CString("")
+	return uint64(repo_handle), ErrorCodeSuccess, nil
 }
 
 //export c_NewPlainRepository
@@ -48,9 +48,7 @@ func c_Repository_get_Remotes(r uint64) uint64 {
 		return IH
 	}
 	repo := obj.(*Repository)
-	remotes := repo.Remotes
-	remotes_handle := RegisterObject(remotes)
-	return uint64(remotes_handle)
+	return uint64(RegisterObject(&repo.Remotes))
 }
 
 //export c_Repository_set_Remotes
@@ -64,8 +62,7 @@ func c_Repository_set_Remotes(r uint64, val uint64) {
 	if !ok {
 		return
 	}
-	remotes := obj.(map[string]*Remote)
-	repo.Remotes = remotes
+	repo.Remotes = *obj.(*map[string]*Remote)
 }
 
 //export c_Repository_get_Storage
@@ -75,9 +72,7 @@ func c_Repository_get_Storage(r uint64) uint64 {
 		return IH
 	}
 	repo := obj.(*Repository)
-	storage := repo.Storage
-	storage_handle := RegisterObject(storage)
-	return uint64(storage_handle)
+	return uint64(RegisterObject(&repo.Storage))
 }
 
 //export c_Repository_set_Storage
@@ -91,18 +86,16 @@ func c_Repository_set_Storage(r uint64, val uint64) {
 	if !ok {
 		return
 	}
-	storage := obj.(core.ObjectStorage)
-	repo.Storage = storage
+	repo.Storage = *obj.(*core.ObjectStorage)
 }
 
 //export c_Repository_get_URL
 func c_Repository_get_URL(r uint64) *C.char {
 	obj, ok := GetObject(Handle(r))
 	if !ok {
-		return C.CString("")
+		return nil
 	}
-	repo := obj.(*Repository)
-	return C.CString(repo.URL)
+	return C.CString(obj.(*Repository).URL)
 }
 
 //export c_Repository_set_URL
@@ -124,7 +117,7 @@ func c_Repository_Pull(r uint64, remoteName, branch string) (int, *C.char) {
 	repo := obj.(*Repository)
 	err := repo.Pull(remoteName, CopyString(branch))
 	if err == nil {
-		return ErrorCodeSuccess, C.CString("")
+		return ErrorCodeSuccess, nil
 	}
 	return ErrorCodeInternal, C.CString(err.Error())
 }
@@ -138,7 +131,7 @@ func c_Repository_PullDefault(r uint64) (int, *C.char) {
 	repo := obj.(*Repository)
 	err := repo.PullDefault()
 	if err == nil {
-		return ErrorCodeSuccess, C.CString("")
+		return ErrorCodeSuccess, nil
 	}
 	return ErrorCodeInternal, C.CString(err.Error())
 }
@@ -157,7 +150,7 @@ func c_Repository_Commit(r uint64, h []byte) (uint64, int, *C.char) {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
   commit_handle := RegisterObject(commit)
-	return uint64(commit_handle), ErrorCodeSuccess, C.CString("")
+	return uint64(commit_handle), ErrorCodeSuccess, nil
 }
 
 //export c_Repository_Commits
@@ -186,7 +179,7 @@ func c_Repository_Tree(r uint64, h []byte) (uint64, int, *C.char) {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
 	tree_handle := RegisterObject(tree)
-	return uint64(tree_handle), ErrorCodeSuccess, C.CString("")
+	return uint64(tree_handle), ErrorCodeSuccess, nil
 }
 
 //export c_Repository_Blob
@@ -203,7 +196,7 @@ func c_Repository_Blob(r uint64, h []byte) (uint64, int, *C.char) {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
 	blob_handle := RegisterObject(blob)
-	return uint64(blob_handle), ErrorCodeSuccess, C.CString("")
+	return uint64(blob_handle), ErrorCodeSuccess, nil
 }
 
 //export c_Repository_Tag
@@ -220,7 +213,7 @@ func c_Repository_Tag(r uint64, h []byte) (uint64, int, *C.char) {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
 	tag_handle := RegisterObject(tag)
-	return uint64(tag_handle), ErrorCodeSuccess, C.CString("")
+	return uint64(tag_handle), ErrorCodeSuccess, nil
 }
 
 //export c_Repository_Tags
@@ -249,5 +242,5 @@ func c_Repository_Object(r uint64, h []byte) (uint64, int, *C.char) {
 		return IH, ErrorCodeInternal, C.CString(err.Error())
 	}
 	robj_handle := RegisterObject(robj)
-	return uint64(robj_handle), ErrorCodeSuccess, C.CString("")
+	return uint64(robj_handle), ErrorCodeSuccess, nil
 }
