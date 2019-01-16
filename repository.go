@@ -1533,3 +1533,6 @@ func (r *Repository) createNewObjectPack(cfg *RepackConfig) (h plumbing.Hash, er
 
 	return h, err
 }
+
+type RpositoryPackfle struct {
+}
